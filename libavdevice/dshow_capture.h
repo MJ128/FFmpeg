@@ -339,6 +339,7 @@ struct dshow_ctx {
     int requested_width;
     int requested_height;
     AVRational requested_framerate;
+    enum AVColorRange requested_col_range;
 
     int sample_rate;
     int sample_size;
