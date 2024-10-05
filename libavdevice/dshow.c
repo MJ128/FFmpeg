@@ -815,6 +815,7 @@ dshow_cycle_formats(AVFormatContext *avctx, enum dshowDeviceType devtype,
                                                                     / ctx->requested_framerate.num : 0;
     int requested_width                       = ctx->requested_width;
     int requested_height                      = ctx->requested_height;
+    int requested_col_range                   = ctx->requested_col_range;
     // audio
     int requested_sample_rate                 = ctx->sample_rate;
     int requested_sample_size                 = ctx->sample_size;
@@ -982,6 +983,9 @@ dshow_cycle_formats(AVFormatContext *avctx, enum dshowDeviceType devtype,
                     goto next;
                 bih->biWidth  = requested_width;
                 bih->biHeight = requested_height;
+            }
+            if (requested_col_range != -1 && requested_col_range != fmt_info->col_range) {
+                goto next;
             }
         } else {
             WAVEFORMATEX *fx;
@@ -1594,7 +1598,8 @@ dshow_add_device(AVFormatContext *avctx,
         par->chroma_location = fmt_info->chroma_loc;
         par->codec_id = fmt_info->codec_id;
         if (par->codec_id == AV_CODEC_ID_RAWVIDEO) {
-            if (bih->biCompression == BI_RGB || bih->biCompression == BI_BITFIELDS) {
+            if (bih->biCompression == BI_RGB || bih->biCompression == BI_BITFIELDS ||
+                bih->biCompression == 0xe436eb7d) {
                 par->bits_per_coded_sample = bih->biBitCount;
                 if (par->height < 0) {
                     par->height *= -1;
@@ -1917,6 +1922,7 @@ static const AVOption options[] = {
     { "video_device_load", "load video capture filter device (and properties) from file", OFFSET(video_filter_load_file), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, DEC },
     { "video_device_save", "save video capture filter device (and properties) to file", OFFSET(video_filter_save_file), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, DEC },
     { "use_video_device_timestamps", "use device instead of wallclock timestamps for video frames", OFFSET(use_video_device_timestamps), AV_OPT_TYPE_BOOL, {.i64 = 1}, 0, 1, DEC },
+    { "color_range", "set video color range", OFFSET(requested_col_range), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 2, DEC },
     { NULL },
 };
 
